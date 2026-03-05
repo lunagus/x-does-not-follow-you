@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X — Does Not Follow You
 // @namespace    https://github.com/lunagus
-// @version      1.0.2
+// @version      1.0.3
 // @description  Highlights users who do NOT follow you back on your X following list.
 // @author       lunagus
 // @match        https://x.com/*/following
@@ -13,14 +13,12 @@
 (function () {
   'use strict';
 
-  // ─── Constants ────────────────────────────────────────────────────────────────
+  const CELL_SELECTOR        = '[data-testid="UserCell"]';
+  const FOLLOWS_YOU_SELECTOR = '[data-testid="userFollowIndicator"]';
+  const BADGE_CLASS          = 'dnfy-no-follow-badge';
+  const PROCESSED_ATTR       = 'data-dnfy-processed';
 
-  const CELL_SELECTOR           = '[data-testid="UserCell"]';
-  const FOLLOWS_YOU_SELECTOR    = '[data-testid="userFollowIndicator"]';
-  const BADGE_CLASS             = 'dnfy-no-follow-badge';
-  const PROCESSED_ATTR          = 'data-dnfy-processed';
-
-GM_addStyle(`
+  GM_addStyle(`
     .${BADGE_CLASS} {
       display: inline-flex;
       align-items: center;
@@ -41,46 +39,33 @@ GM_addStyle(`
       pointer-events: none;
       user-select: none;
       box-shadow: 0 1px 4px rgba(255, 59, 48, 0.4);
-      animation: lunagus-fadein 0.25s ease;
+      animation: dnfy-fadein 0.25s ease;
     }
-
     .${BADGE_CLASS}::before {
       content: "✕";
       font-size: 9px;
       font-weight: 900;
       opacity: 0.85;
     }
-
-    @keyframes lunagus-fadein {
+    @keyframes dnfy-fadein {
       from { opacity: 0; transform: scale(0.85); }
       to   { opacity: 1; transform: scale(1); }
     }
   `);
 
-  // ─── Core logic ───────────────────────────────────────────────────────────────
-  
   function processCell(cell) {
-    const followingBtn = cell.querySelector('button[data-testid$="-unfollow"]');
-    if (!followingBtn) return;
-
-    // Skip if already handled
+    if (!cell.querySelector('button[data-testid$="-unfollow"]')) return;
     if (cell.hasAttribute(PROCESSED_ATTR)) return;
     cell.setAttribute(PROCESSED_ATTR, 'true');
-
-    const followsYou = cell.querySelector(FOLLOWS_YOU_SELECTOR);
-    if (followsYou) return;
-
+    if (cell.querySelector(FOLLOWS_YOU_SELECTOR)) return;
     const handleEl = cell.querySelector('a[href] div[dir="ltr"] span');
     if (!handleEl) return;
-
     const handleRow = handleEl.closest('div.css-175oi2r');
     if (!handleRow) return;
-
     const badge = document.createElement('span');
     badge.className = BADGE_CLASS;
     badge.textContent = 'Does not follow you';
     badge.title = 'This user does not follow you back';
-
     handleRow.appendChild(badge);
   }
 
@@ -88,15 +73,11 @@ GM_addStyle(`
     document.querySelectorAll(CELL_SELECTOR).forEach(processCell);
   }
 
-  // ─── MutationObserver (handles virtualized list) ───────────────────────────
-
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (!mutation.addedNodes.length) continue;
-
       for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) continue;
-
         if (node.matches(CELL_SELECTOR)) {
           processCell(node);
         } else {
@@ -106,14 +87,20 @@ GM_addStyle(`
     }
   });
 
-  // ─── Init ─────────────────────────────────────────────────────────────────────
+  const _pushState = history.pushState.bind(history);
+  history.pushState = function (...args) {
+    _pushState(...args);
+    setTimeout(scanCells, 500);
+    setTimeout(scanCells, 1500);
+  };
+  window.addEventListener('popstate', () => {
+    setTimeout(scanCells, 500);
+    setTimeout(scanCells, 1500);
+  });
 
   function init() {
     scanCells();
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   if (document.readyState === 'loading') {
@@ -121,5 +108,4 @@ GM_addStyle(`
   } else {
     init();
   }
-
 })();
