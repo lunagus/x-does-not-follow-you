@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X — Does Not Follow You
 // @namespace    https://github.com/lunagus
-// @version      1.0.0
+// @version      1.0.1
 // @description  Highlights users who do NOT follow you back on your X following list.
 // @author       lunagus
 // @match        https://x.com/*/following
@@ -58,6 +58,12 @@
       to   { opacity: 1; transform: scale(1); }
     }
   `);
+
+  // ─── URL guard ────────────────────────────────────────────────────────────────
+
+  function isFollowingPage() {
+    return /\/[^/]+\/following(\/|$)/.test(window.location.pathname);
+  }
 
   // ─── Core logic ───────────────────────────────────────────────────────────────
 
