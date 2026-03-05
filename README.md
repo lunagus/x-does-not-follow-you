@@ -47,6 +47,7 @@ Matches both `x.com/*/following` and `twitter.com/*/following`.
 ## Notes
 
 - The script reads **only what's visible on the page** — it makes no requests to any API and stores no data.
+- If the script doesn't work at first, try reloading the page.
 - X occasionally changes internal `data-testid` attribute names. If badges stop appearing after an X update, open an [issue](https://github.com/lunagus/x-does-not-follow-you/issues) and I'll push a fix.
 
 ---
