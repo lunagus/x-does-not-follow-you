@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X — Does Not Follow You
 // @namespace    https://github.com/lunagus
-// @version      1.0.1
+// @version      1.0.2
 // @description  Highlights users who do NOT follow you back on your X following list.
 // @author       lunagus
 // @match        https://x.com/*/following
@@ -20,9 +20,7 @@
   const BADGE_CLASS             = 'dnfy-no-follow-badge';
   const PROCESSED_ATTR          = 'data-dnfy-processed';
 
-  // ─── Styles ───────────────────────────────────────────────────────────────────
-
-  GM_addStyle(`
+GM_addStyle(`
     .${BADGE_CLASS} {
       display: inline-flex;
       align-items: center;
@@ -43,7 +41,7 @@
       pointer-events: none;
       user-select: none;
       box-shadow: 0 1px 4px rgba(255, 59, 48, 0.4);
-      animation: dnfy-fadein 0.25s ease;
+      animation: lunagus-fadein 0.25s ease;
     }
 
     .${BADGE_CLASS}::before {
@@ -53,40 +51,28 @@
       opacity: 0.85;
     }
 
-    @keyframes dnfy-fadein {
+    @keyframes lunagus-fadein {
       from { opacity: 0; transform: scale(0.85); }
       to   { opacity: 1; transform: scale(1); }
     }
   `);
 
-  // ─── URL guard ────────────────────────────────────────────────────────────────
-
-  function isFollowingPage() {
-    return /\/[^/]+\/following(\/|$)/.test(window.location.pathname);
-  }
-
   // ─── Core logic ───────────────────────────────────────────────────────────────
-
-  /**
-   * Injects the "DOES NOT FOLLOW YOU" badge into the username row
-   * of a UserCell that has no "Follows you" indicator.
-   *
-   * @param {Element} cell - The [data-testid="UserCell"] element
-   */
+  
   function processCell(cell) {
+    const followingBtn = cell.querySelector('button[data-testid$="-unfollow"]');
+    if (!followingBtn) return;
+
     // Skip if already handled
     if (cell.hasAttribute(PROCESSED_ATTR)) return;
     cell.setAttribute(PROCESSED_ATTR, 'true');
 
     const followsYou = cell.querySelector(FOLLOWS_YOU_SELECTOR);
-    if (followsYou) return; // They follow you — nothing to do
+    if (followsYou) return;
 
-    // Find the username (@handle) element to anchor the badge next to it
     const handleEl = cell.querySelector('a[href] div[dir="ltr"] span');
     if (!handleEl) return;
 
-    // Walk up to find the flex row that holds the handle
-    // so we can append the badge inline after it
     const handleRow = handleEl.closest('div.css-175oi2r');
     if (!handleRow) return;
 
@@ -95,13 +81,9 @@
     badge.textContent = 'Does not follow you';
     badge.title = 'This user does not follow you back';
 
-    // Insert the badge into the handle row
     handleRow.appendChild(badge);
   }
 
-  /**
-   * Scans the page for unprocessed UserCells and processes them.
-   */
   function scanCells() {
     document.querySelectorAll(CELL_SELECTOR).forEach(processCell);
   }
@@ -115,7 +97,6 @@
       for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) continue;
 
-        // The added node might BE a UserCell, or CONTAIN UserCells
         if (node.matches(CELL_SELECTOR)) {
           processCell(node);
         } else {
@@ -128,17 +109,13 @@
   // ─── Init ─────────────────────────────────────────────────────────────────────
 
   function init() {
-    // Process any cells already in the DOM
     scanCells();
-
-    // Watch for new cells as the user scrolls
     observer.observe(document.body, {
       childList: true,
       subtree: true,
     });
   }
 
-  // Wait for the page to be sufficiently loaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
