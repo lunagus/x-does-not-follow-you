@@ -17,8 +17,8 @@
 
   const CELL_SELECTOR           = '[data-testid="UserCell"]';
   const FOLLOWS_YOU_SELECTOR    = '[data-testid="userFollowIndicator"]';
-  const BADGE_CLASS             = 'lunagus-no-follow-badge';
-  const PROCESSED_ATTR          = 'data-lunagus-processed';
+  const BADGE_CLASS             = 'dnfy-no-follow-badge';
+  const PROCESSED_ATTR          = 'data-dnfy-processed';
 
   // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@
       pointer-events: none;
       user-select: none;
       box-shadow: 0 1px 4px rgba(255, 59, 48, 0.4);
-      animation: lunagus-fadein 0.25s ease;
+      animation: dnfy-fadein 0.25s ease;
     }
 
     .${BADGE_CLASS}::before {
@@ -53,7 +53,7 @@
       opacity: 0.85;
     }
 
-    @keyframes lunagus-fadein {
+    @keyframes dnfy-fadein {
       from { opacity: 0; transform: scale(0.85); }
       to   { opacity: 1; transform: scale(1); }
     }
