@@ -15,8 +15,8 @@ It fully handles X's virtualized list, so badges are applied correctly as you sc
 ## Installation
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/) for your browser.
-2. Click **[here](./x-does-not-follow-you.user.js)** to open the script file, then click **Raw**.
-3. Your userscript manager will prompt you to install it — confirm.
+   
+2. Click **[HERE](https://github.com/lunagus/x-does-not-follow-you/raw/refs/heads/main/x-does-not-follow-you.user.js)** to install the script file.
 
 ---
 
