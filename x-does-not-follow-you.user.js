@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X — Does Not Follow You
 // @namespace    https://github.com/lunagus
-// @version      1.0.3
+// @version      1.0.4
 // @description  Highlights users who do NOT follow you back on your X following list.
 // @author       lunagus
 // @match        https://x.com/*/following
@@ -13,10 +13,10 @@
 (function () {
   'use strict';
 
-  const CELL_SELECTOR        = '[data-testid="UserCell"]';
-  const FOLLOWS_YOU_SELECTOR = '[data-testid="userFollowIndicator"]';
-  const BADGE_CLASS          = 'dnfy-no-follow-badge';
-  const PROCESSED_ATTR       = 'data-dnfy-processed';
+const CELL_SELECTOR = '[data-testid="UserCell"]';
+const FOLLOWS_YOU_SELECTOR = '[data-testid="userFollowIndicator"]';
+const BADGE_CLASS = 'dnfy-no-follow-badge';
+const PROCESSED_ATTR = 'data-dnfy-processed';
 
   GM_addStyle(`
     .${BADGE_CLASS} {
@@ -53,20 +53,23 @@
     }
   `);
 
-  function processCell(cell) {
+function processCell(cell) {
     if (!cell.querySelector('button[data-testid$="-unfollow"]')) return;
     if (cell.hasAttribute(PROCESSED_ATTR)) return;
     cell.setAttribute(PROCESSED_ATTR, 'true');
+
     if (cell.querySelector(FOLLOWS_YOU_SELECTOR)) return;
-    const handleEl = cell.querySelector('a[href] div[dir="ltr"] span');
-    if (!handleEl) return;
-    const handleRow = handleEl.closest('div.css-175oi2r');
-    if (!handleRow) return;
+
+    const spans = Array.from(cell.querySelectorAll('span'));
+    const handleSpan = spans.find(span => span.textContent.trim().startsWith('@'));
+    if (!handleSpan) return;
+
     const badge = document.createElement('span');
     badge.className = BADGE_CLASS;
     badge.textContent = 'Does not follow you';
     badge.title = 'This user does not follow you back';
-    handleRow.appendChild(badge);
+
+    handleSpan.parentElement.appendChild(badge);
   }
 
   function scanCells() {
